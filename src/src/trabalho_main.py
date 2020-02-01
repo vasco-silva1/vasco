@@ -21,6 +21,9 @@ import os
 
 
 class GestorDNA:
+    '''
+    Gestor para sequências de DNA
+    '''
    
     def __init__(self):
         self.dic={}
@@ -39,12 +42,25 @@ class GestorDNA:
         return self.cwd
 
     def getIds(self):
+        '''
+        Retorna lista de Ids
+        '''
         return self.listaIds
     
     def setName(self,nome):
+        '''
+        Mudar o nome
+        :param nome
+        :return:
+        '''
         self.name=nome
     
     def loaddic(self,filename):
+        '''
+        Permite carregar um dicionário previamente guardado.
+        :param filename: Nome do dicionário
+        :return:
+        '''
         file=open(filename+'.txt','rb')
         self.name=filename
         self.dic=pickle.load(file)
@@ -52,6 +68,12 @@ class GestorDNA:
         file.close()
     
     def addSeq(self,ident,seq):
+        '''
+
+        :param ident: Identificador da sequência que vamos introduzir
+        :param seq: Sequência de bases ACTG
+        :return:
+        '''
         Id=ident
         sequen=seq
         if self.valSeq(seq):
@@ -65,6 +87,13 @@ class GestorDNA:
             print('Sequência DNA inválida')
             
     def addAnnotation(self,tipo,anno,Id):
+        '''
+        Permite adicionar anotações a uma sequeência.
+        :param tipo: tipo de anotação
+        :param anno: anotação
+        :param Id: Identificador da sequências
+        :return:
+        '''
         if tipo not in self.dic[Id]['Anotações'].keys():
             self.dic[Id]['Anotações'][tipo]=[]
             self.dic[Id]['Anotações'][tipo].append(anno)
@@ -72,6 +101,11 @@ class GestorDNA:
             self.dic[Id]['Anotações'][tipo].append(anno)
             
     def valSeq(self,seq):
+        '''
+        Permite validar a sequência de DNA. Sequência deve conter apenas caracteres ACTG
+        :param seq: Sequência de DNA
+        :return:
+        '''
         vs=MySeq(seq,'dna')
         if vs.validaER():
             return True
@@ -79,6 +113,11 @@ class GestorDNA:
             return False
         
     def printbyid(self,Id):
+        '''
+        Retorna informação para um Id de uma sequência. Como o comprimento, o conteudo GC e a frequência de cada Base Azotada.
+        :param Id: Identificador da sequência de DNA
+        :return:
+        '''
         for key,val in self.dic[Id].items():
             print (key+':\n')
             if type(val)==dict:
@@ -102,6 +141,11 @@ class GestorDNA:
                 
                 
     def conteudoGC(self,mseq):
+        '''
+        Calcula a percentagem de bases G e C numa sequência de DNA
+        :param mseq: Sequência de DNA
+        :return:
+        '''
         G=mseq.count("G")
         C=mseq.count("C")
         conteudo=G+C
@@ -110,6 +154,11 @@ class GestorDNA:
         return conteudo
 
     def mostfreq(self,mseq):
+        '''
+        Calcula a percentagem de cada Base Azotada na sequência de DNA.
+        :param mseq: Sequência de DNA
+        :return:
+        '''
         G=(mseq.count("G")/len(mseq))*100
         C=(mseq.count("C")/len(mseq))*100
         A=(mseq.count("A")/len(mseq))*100
@@ -118,6 +167,11 @@ class GestorDNA:
         return (("A : ",A ),("T : ",T ),("G : ",G ),("C : ", C))
         
     def printDic(self,dic=None):
+        '''
+        Imprime dicionário
+        :param dic: Dicionário
+        :return:
+        '''
         if dic==None:
             dic=self.dic
         else:
@@ -141,6 +195,11 @@ class GestorDNA:
                     print()
                     
     def __printSubDic(self,subdic):
+        '''
+        Imprime subDic
+        :param subdic: subdic
+        :return:
+        '''
         for key, val in subdic.items():
             print(key+':')
             if type(val)==dict:
@@ -155,16 +214,42 @@ class GestorDNA:
                 print()
         
     def listIds(self):
+        '''
+        Função que permite criar uma lista com todos os Ids das sequências da base de dados
+        :return:
+        '''
         for key in self.dic.keys():
             self.listaIds.append(key)
                 
     def editAnnotations(self,Id,tipo,nr,new):
+        '''
+        Função que permite editar uma anotação de uma sequeência de DNA
+        :param Id: Identificador da sequência de DNA a editar
+        :param tipo: Tipo de anotação
+        :param nr: Anotação
+        :param new: Nova Anotação
+        :return:
+        '''
         self.dic[Id]['Anotações'][tipo][nr]=new
         
     def editSeq(self,Id,new):
+        '''
+        Função que edita a sequência de DNA
+        :param Id: Identificador da Sequência DNA
+        :param new: Nova Sequência de DNA
+        :return:
+        '''
         self.dic[Id]['Sequência']=new
         
     def search_seqs(self,query,match,mismatch,gap):
+        '''
+        Funçao que faz uma procura na base de dados pela sequência mais similar com a nossa sequência query
+        :param query: Sequência input para verificar similaridade
+        :param match: Critério de match
+        :param mismatch: Critério de mismatch
+        :param gap: Critério de gap
+        :return:
+        '''
         db=[]
         sm=SubstMatrix()
         sm.createFromMatchPars(match,mismatch,"ATGC")
@@ -188,6 +273,12 @@ class GestorDNA:
                 print('Melhor match encontrado na sequência com Id %s' %Id)
     
     def search_pattern(self,pat,Id):
+        '''
+        Função que permite a pesquisa de um certo padrão numa sequência
+        :param pat: Padrão a pesquisar
+        :param Id: Identificador da Sequência
+        :return:
+        '''
         seq=self.dic[Id]['Sequência']
         matches = re.finditer(pat,seq)
         res=[]
@@ -204,11 +295,22 @@ class GestorDNA:
             return None
 
     def search_patdb(self,pat):
+        '''
+        Pesquisa de um padrão na base de dados das sequências
+        :param pat: Padrão a pesquisar
+        :return:
+        '''
         for Id in self.listaIds:
             self.search_pattern(pat,Id)
 
     
     def search_freq(self,sim=None,Id=None):
+        '''
+        Função para pesquisar simbolo numa sequência ou na base de dados
+        :param sim: Simbolo
+        :param Id: Identificador da Sequência
+        :return:
+        '''
         if Id != None:
             seq=self.dic[Id]['Sequência']
             res=[]
@@ -229,6 +331,10 @@ class GestorDNA:
         
         
     def arvore(self):
+        '''
+        Criar arvore com as Sequências
+        :return:
+        '''
         bd=[]
         for Id in self.listaIds:
             bd.append(MySeq(self.dic[Id]['Sequência'],'dna'))
@@ -240,12 +346,22 @@ class GestorDNA:
         arv.printtree()
         
     def traducao(self,Id):
+        '''
+        Função que permite fazer a tradução do DNA para a corresponde sequência de aminoácidos
+        :param Id: Identificador da Sequência
+        :return:
+        '''
         seq=self.dic[Id]['Sequência']
         ms=MySeq(seq,self.seqs_tipo)
         res=ms.traduzSeq()
         print(res)
     
     def orfs(self,Ids):
+        '''
+        Pesquisa das Open Reading Frames
+        :param Ids:
+        :return:
+        '''
         listaids=[]
         for id in Ids:
             listaids.append(self.dic[id]['Sequência'])
@@ -256,6 +372,11 @@ class GestorDNA:
             x.printseq()
     
     def saveOrfs(self,Id):
+        '''
+        Gravação das Open Readin Frames
+        :param Id:
+        :return:
+        '''
         try:
             seq=self.dic[Id]['Sequência']
             ms=MySeq(seq,self.seqs_tipo)
@@ -271,6 +392,12 @@ class GestorDNA:
             
             
     def searchonline(self,Id,email):
+        '''
+        Função para fazer uma pesquisa nas bases de dados online
+        :param Id: Identificador das sequência
+        :param email: endereço de email do utilizador
+        :return:
+        '''
         try:
             Entrez.email=email
             if type(Id)==str:
@@ -410,6 +537,14 @@ class GestorDNA:
             print(ID+ '->'+ self.dic[ID]['Sequência'])
             
     def MultiAli(self,Seqs,match=1,mismatch=-1,gap=-1):
+        '''
+        Alinhamento multiplo de várias sequências
+        :param Seqs:
+        :param match:
+        :param mismatch:
+        :param gap:
+        :return:
+        '''
         listaseqs=[]
         for seq in Seqs:
             listaseqs.append(self.dic[seq]['Sequência'])
@@ -421,6 +556,11 @@ class GestorDNA:
         return resultado
     
     def import_fasta(self,filename):
+        '''
+        Importação de um ficheiro fasta
+        :param filename:
+        :return:
+        '''
         fasta_sequences = SeqIO.parse(open(filename),'fasta')
         for seq in fasta_sequences:
             if self.addSeq(seq.id,str(seq.seq).upper()):
